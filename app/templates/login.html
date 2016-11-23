@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">URL Shortner and Bookmark</a>
+      </div>
+      <div id="navbar" class="collapse navbar-collapse pull-right">
+        <ul class="nav navbar-nav">
+          <li>
+            <a href="{{auth_url}}">Sign In Google</a>
+          </li>
+        </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+  </nav>
+{% endblock %}
+
+{% block content %}
+
+<div style="margin-top: 10%;"></div>
+<div class="container">
+  <div>
+    <h2>URL Shortener and bookmark tool</h2>
+    <p class="lead">Use this tool to shorten URLs to the names that you desire. You can also use it as a place to bookmark all URLs used by others.</p>
+    <br>
+    <h3>Use your official google account to <a href="{{auth_url}}">login</a></h3>
+  </div>
+</div>
+
+{% endblock %}

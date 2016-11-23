@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">URL Shortner and Bookmark</a>
+      </div>
+      <div id="navbar" class="collapse navbar-collapse pull-right">
+        <ul class="nav navbar-nav">
+          <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ user.myname }} <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="/logout">Log Out</a></li>
+              </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+{% endblock %}
+
+{% block content %}
+<div style="margin-top: 50px;"></div>
+<div class="container">
+  <h3>Hello, {{ user.myname }}!</h3>
+
+  <br><br>
+
+  <div class="modal fade" id="addEntry" tabindex="-1" role="dialog" aria-labelledby="addEntryLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="addEntryLabel">Add New Entry</h4>
+        </div>
+        <div class="modal-body">
+          <form class="form-horizontal">
+            <div class="form-group">
+              <label for="urlName" class="col-sm-2 control-label">Name</label>
+              <div class="col-sm-5">
+                <input type="text" class="form-control" id="urlName" placeholder="Name">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="fullUrl" class="col-sm-2 control-label">URL</label>
+              <div class="col-sm-10">
+                <input type="url" class="form-control" id="fullUrl" placeholder="URL">
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" id="share"> Share
+                  </label>
+                </div>
+              </div>
+            </div>
+          </form>
+          <div id="addEntryMessage"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" id="closeModal">Close</button>
+          <button type="button" class="btn btn-primary" id="saveEntry">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="upEntry" tabindex="-1" role="dialog" aria-labelledby="upEntryLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="upEntryLabel">Update Entry</h4>
+        </div>
+        <div class="modal-body">
+          <form class="form-horizontal">
+            <div class="form-group">
+              <label for="urlNameUp" class="col-sm-2 control-label">Name</label>
+              <div class="col-sm-5">
+                <input type="text" class="form-control" id="urlNameUp" placeholder="Name" readonly>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="fullUrlUp" class="col-sm-2 control-label">URL</label>
+              <div class="col-sm-10">
+                <input type="url" class="form-control" id="fullUrlUp" placeholder="URL">
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" id="shareUp"> Share
+                  </label>
+                </div>
+              </div>
+            </div>
+          </form>
+          <div id="upEntryMessage"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" id="upCloseModal">Close</button>
+          <button type="button" class="btn btn-primary" id="upSaveEntry">Update changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ul class="nav nav-pills">
+    <li role="presentation">
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-toggle="tooltip" data-target="#addEntry" title="Add an Entry">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Entry
+      </button>
+      &nbsp;
+    </li>
+    <!-- <li role="presentation">
+      &nbsp;
+      <button type="button" class="btn btn-primary" data-toggle="tooltip" title="My URLs" id="myEntries">
+        <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+      </button>
+      &nbsp;&nbsp;
+    </li> -->
+    <li role="presentation">
+      <div class="alert alert-danger alert-dismissable">
+        <button type="button" class="close" id="delAlertButton" aria-hidden="true">&times;</button>
+        <span id="delAlert"></span>
+      </div>
+    </li>
+  </ul>
+
+  <br>
+  <table id="maintable" class="table table-bordered table-striped table-font" cellspacing="0">
+    <thead>
+      <tr><th>Name</th><th>User</th><th>URL</th><th>Actions</th></tr>
+    </thead>
+  </table>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    var oTable = $('#maintable').DataTable( {
+      "processing": true,
+      "serverSide": true,
+      "ajax": "/getEntriesSSP?type=all",
+      "pageLength": 50,
+      "columns": [
+        {
+          "data": "url_name",
+          "class": "col-md-1"
+        },
+        { "data": "user_id" },
+        {
+          "data": "full_url",
+          "class": "td_left"
+        },
+        {
+          "class": "actions-column col-md-2",
+          "orderable": false,
+          "data": null,
+          "defaultContent": '<button type="button" class="btn btn-primary delEntry"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>&nbsp;<button type="button" class="btn btn-primary updateEntry" data-toggle="modal" data-target="#upEntry"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></button>'
+        }
+      ]
+    });
+
+    $('#maintable tbody').on('click', 'tr td button.delEntry', function () {
+      var tr = $(this).closest('tr');
+      var row = oTable.row(tr);
+      var data = row.data();
+      var name = $('#dtrow_' + data['DT_RowId']).text();
+      $.get("/delEntry?name=" + name, function(data, status) {
+        console.log(data);
+        oTable.ajax.reload();
+      }).fail(function(data) {
+        message = jQuery.parseJSON(data.responseText);
+        $("#delAlert").html("Delete Failed. " + message['message']);
+        $(".alert").show();
+        console.log(data);
+      });
+    });
+
+    $('#maintable tbody').on('click', 'tr td button.updateEntry', function () {
+      var tr = $(this).closest('tr');
+      var row = oTable.row(tr);
+      var data = row.data();
+      var url_name = $('#dtrow_' + data['DT_RowId']).text();
+      var share = data['share'];
+      var full_url = data['full_url']
+      $("#urlNameUp").val(url_name);
+      $("#fullUrlUp").val(full_url);
+      $("#shareUp").prop("checked", $.parseJSON(share));
+    });
+
+    $("#saveEntry").click(function() {
+      var input1 = $("#urlName").val();
+      var input2 = $("#fullUrl").val();
+      var input3 = $("#share").prop('checked');
+      $.post("/postEntry", {urlname: input1, fullurl: input2, share: input3, action: 'create'}, function( data ) {
+        $("#addEntryMessage").html("Entry Saved.");
+        console.log(data);
+        $("#addEntry").modal("hide");
+      }, "json").fail(function( data ) {
+        message = jQuery.parseJSON(data.responseText);
+        $("#addEntryMessage").html( message['message'] );
+        console.log(jQuery.parseJSON(data.responseText));
+      });
+    });
+
+    $("#addEntry").on("hidden.bs.modal", function(e) {
+      oTable.ajax.reload();
+      $("#addEntryMessage").html("");
+      $("#urlName").val("");
+      $("#fullUrl").val("");
+      $("#share").prop('checked', false);
+    });
+
+    $("#upSaveEntry").click(function() {
+      var input1 = $("#urlNameUp").val();
+      var input2 = $("#fullUrlUp").val();
+      var input3 = $("#shareUp").prop('checked');
+      $.post("/postEntry", {urlname: input1, fullurl: input2, share: input3, action: 'update'}, function( data ) {
+        $("#upEntryMessage").html("Entry Updated.");
+        console.log(data);
+        $("#upEntry").modal("hide");
+      }, "json").fail(function( data ) {
+        message = jQuery.parseJSON(data.responseText);
+        $("#upEntryMessage").html( message['message'] );
+        console.log(jQuery.parseJSON(data.responseText));
+      });
+    });
+
+    $("#upEntry").on("hidden.bs.modal", function(e) {
+      oTable.ajax.reload();
+      $("#upEntryMessage").html("");
+    });
+
+    $("#delAlertButton").click(function() {
+      $(".alert").hide();
+    })
+
+    $("div.dataTables_filter input").unbind();
+    $("div.dataTables_filter input").on('keydown', function(e) {
+      var search_val = $("div.dataTables_filter input").val();
+      // if (e.which == 13 || search_val.length >= 3) {
+      if (e.which == 13) {
+        oTable.search( $("div.dataTables_filter input").val()).draw();
+      }
+    });
+
+    // $("#myEntries").click(function() {
+    //   refreshTable("current_user");
+    // });
+
+});
+</script>
+
+{% endblock %}
