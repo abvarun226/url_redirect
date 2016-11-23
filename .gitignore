@@ -4,4 +4,4 @@ test_ssl.py
 config.py
 *.pyc
 tmp/
-data/
+data/*
