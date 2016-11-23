@@ -5,3 +5,4 @@ config.py
 *.pyc
 tmp/
 data/*
+im_tool.fcgi
