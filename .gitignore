@@ -1,7 +1,6 @@
 ssl.crt
 ssl.key
 test_ssl.py
-config.py
 *.pyc
 tmp/
 data/*
