@@ -68,7 +68,8 @@ def callback():
         if resp.status_code == 200:
             user_data = resp.json()
             email = user_data['email']
-            if app.config['OAUTH_EMAIL_DOMAIN'] not in email:
+            email_domain = email.split('@')[1]
+            if app.config['OAUTH_EMAIL_DOMAIN'] != email_domain:
                 return 'Email domain does not have access!'
             user = User.query.filter_by(email=email).first()
             if user is None:
